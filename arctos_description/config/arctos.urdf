@@ -13,80 +13,80 @@
   <transmission name="joint_1_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_1">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_1_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="joint_2_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_2">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_2_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="joint_3_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_3">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_3_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="joint_4_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_4">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_4_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="joint_5_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_5">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_5_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="joint_6_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint_6">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="joint_6_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="jaw1_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="jaw1">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="jaw1_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="jaw2_tran">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="jaw2">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
     </joint>
     <actuator name="jaw2_actr">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/ArctosInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -418,7 +418,7 @@
   </joint>
   <ros2_control name="arctos" type="system">
     <hardware>
-      <plugin>arctos_interface/ArctosInterface</plugin>
+      <plugin>libarctos_interface.so</plugin>
     </hardware>
     <joint name="joint_1">
       <command_interface name="position">
@@ -431,8 +431,6 @@
       </command_interface>
       <state_interface name="position">
         <param name="initial_value">0.0</param>
-        arctos.ros2_control.xacro
-        
       </state_interface>
       <state_interface name="velocity"/>
     </joint>

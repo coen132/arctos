@@ -1,85 +1,115 @@
-cmake_minimum_required(VERSION 3.8)
-project(arctos_hardware_interface)
+cmake_minimum_required(VERSION 3.16)
+project(arctos_hardware_interface LANGUAGES CXX)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
+  add_compile_options(-Wall -Wextra)
 endif()
 
+# set the same behavior for windows as it is on linux
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 # find dependencies
+set(HW_IF_INCLUDE_DEPENDS
+  pluginlib
+  rcpputils
+  hardware_interface
+)
+set(REF_GEN_INCLUDE_DEPENDS
+  kdl_parser
+  rclcpp
+  trajectory_msgs
+)
+set(CONTROLLER_INCLUDE_DEPENDS
+  pluginlib
+  rcpputils
+  controller_interface
+  realtime_tools
+  trajectory_msgs
+)
+
+# find dependencies
+find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
-find_package(can_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(realtime_tools REQUIRED)
-find_package(rcpputils REQUIRED)
+foreach(Dependency IN ITEMS ${HW_IF_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
+foreach(Dependency IN ITEMS ${REF_GEN_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
+foreach(Dependency IN ITEMS ${CONTROLLER_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+## COMPILE
+add_executable(send_trajectory reference_generator/send_trajectory.cpp)
 
-install(DIRECTORY
-  launch
-  include
-  DESTINATION share/${PROJECT_NAME}
+ament_target_dependencies(
+  send_trajectory PUBLIC
+  ${REF_GEN_INCLUDE_DEPENDS}
 )
 
 add_library(
-  ${PROJECT_NAME}
+  arctos_hardware_interface
   SHARED
-  src/arctos_interface.cpp
+  hardware/arctos_hardware.cpp
   controller/arctos_controller.cpp
 )
 
-target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE
-  include)
+target_compile_features(arctos_hardware_interface PUBLIC cxx_std_17)
 
+target_include_directories(arctos_hardware_interface PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controller/include>
+  $<INSTALL_INTERFACE:include/arctos_hardware_interface>
+)
 ament_target_dependencies(
-  ${PROJECT_NAME} 
-  can_msgs
-  sensor_msgs
-  hardware_interface
-  pluginlib
-  rclcpp_lifecycle
-  realtime_tools
-  rcpputils
-  trajectory_msgs)
-
-target_compile_definitions(${PROJECT_NAME}  PRIVATE "JOINT_STATE_BROADCASTER_BUILDING_DLL")
-target_compile_definitions(${PROJECT_NAME}  PUBLIC "PLUGINLIB__DISABLE_BOOST_FUCNTIONS")
-pluginlib_export_plugin_description_file(hardware_interface arctos_hardware_interface.xml)
-
-install(
-  TARGETS ${PROJECT_NAME} 
-  DESTINATION lib
-)
-install(
-  DIRECTORY include/ 
-  DESTINATION include
+  arctos_hardware_interface PUBLIC
+  ${HW_IF_INCLUDE_DEPENDS}
+  ${CONTROLLER_INCLUDE_DEPENDS}
 )
 
-install(
-  DIRECTORY ros2_control/
-  DESTINATION share/arctos_hardware_interface/ros2_control
-)
-
+# Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface arctos_hardware_interface.xml)
 # Export controller plugins
 pluginlib_export_plugin_description_file(controller_interface arctos_hardware_interface.xml)
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
+# INSTALL
+# install(
+#   DIRECTORY hardware/include/
+#   DESTINATION include/arctos_hardware_interface
+# )
+install(
+  DIRECTORY hardware/include/
+  DESTINATION include/arctos_hardware_interface
+)
 
+install(
+  DIRECTORY controller/include/
+  DESTINATION share/arctos_hardware_interface
+)
+
+install(
+  DIRECTORY bringup/launch bringup/config
+  DESTINATION share/arctos_hardware_interface
+)
+
+# install(
+#   DIRECTORY controller/include/
+#   DESTINATION share/arctos_hardware_interface
+# )
+install(
+    TARGETS send_trajectory
+    RUNTIME DESTINATION lib/arctos_hardware_interface
+)
+
+install(TARGETS arctos_hardware_interface
+  EXPORT export_arctos_hardware_interface
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+## EXPORTS
+ament_export_targets(export_arctos_hardware_interface HAS_LIBRARY_TARGET)
+ament_export_dependencies(${HW_IF_INCLUDE_DEPENDS} ${REF_GEN_INCLUDE_DEPENDS} ${CONTROLLER_INCLUDE_DEPENDS})
 ament_package()

@@ -3,14 +3,15 @@ moveit_setup_assistant_config:
     package: arctos_description
     relative_path: urdf/arctos.urdf
   srdf:
-    relative_path: config/arctos_urdf.srdf
+    relative_path: config/arctos.srdf
   package_settings:
     author_name: Coen Heerink
-    author_email: coenheerink@outlookc.om
-    generated_timestamp: 1700569769
+    author_email: Coen Heerink
+    generated_timestamp: 1722185740
   control_xacro:
     command:
       - position
+      - velocity
     state:
       - position
       - velocity
@@ -20,6 +21,7 @@ moveit_setup_assistant_config:
   control_xacro:
     command:
       - position
+      - velocity
     state:
       - position
       - velocity

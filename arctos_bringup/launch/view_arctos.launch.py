@@ -1,17 +1,3 @@
-# Copyright 2023 ros2_control Development Team
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
@@ -57,11 +43,13 @@ def generate_launch_description():
             ),
         ]
     )
+
     robot_description = {"robot_description": robot_description_content}
 
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare("arctos_bringup"), "rviz", "view_robot.rviz"]
     ) 
+
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -74,6 +62,7 @@ def generate_launch_description():
         ],
         output="both",
     )
+
     joint_state_publisher_node = Node(
         package="joint_state_publisher_gui",
         executable="joint_state_publisher_gui",
@@ -123,9 +112,10 @@ def generate_launch_description():
     nodes_to_start = [
         joint_state_publisher_node,
         robot_state_publisher_node,
+        robot_controller_spawner,
         control_node,
         rviz_node,
-        robot_controller_spawner,
+
     ]
 
     return LaunchDescription(declared_arguments + nodes_to_start)

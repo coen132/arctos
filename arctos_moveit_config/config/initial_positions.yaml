@@ -1,4 +1,4 @@
-# Default initial positions for arctos_urdf's ros2_control fake system
+# Default initial positions for arctos's ros2_control fake system
 
 initial_positions:
   jaw1: 0

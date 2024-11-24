@@ -4,24 +4,28 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
+      ros__parameters:
+        publish_rate: 10  # Hz
 
-    arctos_controller:
-      type: arctos_controller/ArctosController
-
-arctos_controller:
-  ros__parameters:
-    joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      - joint_5
-      - joint_6
-
-    command_interfaces:
-      - position
-      - velocity
-
-    state_interfaces:
-      - position
-      - velocity
+    hardware:
+      type: arctos_hardware_interface/ArctosHardwareInterface  # Use your custom hardware interface
+      ros__parameters:
+        joints:
+          - joint_1
+          - joint_2
+          - joint_3
+          - joint_4
+          - joint_5
+          - joint_6
+          
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+      ros__parameters:
+        joint_names:
+          - joint_1
+          - joint_2
+          - joint_3
+          - joint_4
+          - joint_5
+          - joint_6
+        # You can add other parameters like gains, limits, etc. if needed

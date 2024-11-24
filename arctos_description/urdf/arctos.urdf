@@ -91,68 +91,7 @@
     </actuator>
   </transmission>
   <gazebo>
-    <plugin filename="libgazebo_ros_control.so" name="control"/>
-  </gazebo>
-  <gazebo reference="base_link">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-  <gazebo reference="Link_1_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Link_2_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Link_3_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Link_4_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Link_5_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Gripper_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Link_6_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Left_jaw_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
-  </gazebo>
-  <gazebo reference="Right_jaw_1">
-    <material>Gazebo/Silver</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <selfCollide>true</selfCollide>
+    <plugin filename="libgazebo_ros_control.so" name="arctos_controller"/>
   </gazebo>
   <link name="world"/>
   <joint name="base_joint" type="fixed">
@@ -418,7 +357,7 @@
   </joint>
   <ros2_control name="arctos" type="system">
     <hardware>
-      <plugin>arctos_interface/ArctosInterface</plugin>
+      <plugin>arctos_hardware_interface/RobotSystem</plugin>
     </hardware>
     <joint name="joint_1">
       <command_interface name="position">
@@ -431,8 +370,6 @@
       </command_interface>
       <state_interface name="position">
         <param name="initial_value">0.0</param>
-        arctos.ros2_control.xacro
-        
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
