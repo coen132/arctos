@@ -56,11 +56,10 @@ add_library(
 )
 
 target_compile_features(arctos_hardware_interface PUBLIC cxx_std_17)
-
 target_include_directories(arctos_hardware_interface PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controller/include>
-  $<INSTALL_INTERFACE:include/arctos_hardware_interface>
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controller/include>
+$<INSTALL_INTERFACE:include/arctos_hardware_interface>
 )
 ament_target_dependencies(
   arctos_hardware_interface PUBLIC
@@ -74,29 +73,18 @@ pluginlib_export_plugin_description_file(hardware_interface arctos_hardware_inte
 pluginlib_export_plugin_description_file(controller_interface arctos_hardware_interface.xml)
 
 # INSTALL
-# install(
-#   DIRECTORY hardware/include/
-#   DESTINATION include/arctos_hardware_interface
-# )
 install(
   DIRECTORY hardware/include/
   DESTINATION include/arctos_hardware_interface
-)
-
-install(
-  DIRECTORY controller/include/
-  DESTINATION share/arctos_hardware_interface
-)
-
+ )
+# install(
+#   DIRECTORY description/launch description/ros2_control description/urdf
+#   DESTINATION share/arctos_hardware_interface
+# )
 install(
   DIRECTORY bringup/launch bringup/config
   DESTINATION share/arctos_hardware_interface
 )
-
-# install(
-#   DIRECTORY controller/include/
-#   DESTINATION share/arctos_hardware_interface
-# )
 install(
     TARGETS send_trajectory
     RUNTIME DESTINATION lib/arctos_hardware_interface

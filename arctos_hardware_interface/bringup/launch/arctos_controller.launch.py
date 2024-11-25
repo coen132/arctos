@@ -10,7 +10,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # Declare arguments
-    arctos_description_dir = get_package_share_directory('arctos_description')
+
     declared_arguments = []
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -19,23 +19,24 @@ def generate_launch_description():
             description="Start RViz2 automatically with this launch file.",
         )
     )
-    urdf_file = os.path.join(arctos_description_dir, 'urdf', 'arctos.urdf')
-  
-    # Get URDF via xacro
-    # robot_description_content = Command(
-    #     [
-    #         PathJoinSubstitution([FindExecutable(name="xacro")]),
-    #         " ",
-    #         PathJoinSubstitution(
-    #             [
-    #                 FindPackageShare("arctos_description"),
-    #                 "urdf",
-    #                 "arctos.urdf.xacro",
-    #             ]
-    #         ),
-    #     ]
-    # )
-    # robot_description = {"robot_description": robot_description_content}
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("arctos_description"), "rviz", "view_robot.rviz"]
+    )
+
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("arctos_description"),
+                    "urdf",
+                    "arctos.urdf.xacro",
+                ]
+            ),
+        ]
+    )
+    robot_description = {"robot_description": robot_description_content}
 
     robot_controllers = PathJoinSubstitution(
         [
@@ -44,14 +45,13 @@ def generate_launch_description():
             "arctos_controller.yaml",
         ]
     )
-    rviz_config_file = os.path.join(arctos_description_dir, 'config', 'moveit.rviz')
-    # rviz_node = Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     output='screen',
-    #     arguments=['-d', rviz_config_file],
-    # )
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', rviz_config_file],
+    )
 
     control_node = Node(
         package="controller_manager",
@@ -62,19 +62,13 @@ def generate_launch_description():
         ],
         output="both",
     )
-    # robot_state_pub_node = Node(
-    #     package="robot_state_publisher",
-    #     executable="robot_state_publisher",
-    #     output="both",
-    #     parameters=[robot_description],
-    # )
     robot_state_pub_node = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='screen',
-        arguments=[urdf_file]
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="both",
+        parameters=[robot_description],
     )
+
     gui = LaunchConfiguration("gui")
     rviz_node = Node(
         package="rviz2",

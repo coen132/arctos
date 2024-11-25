@@ -1,71 +1,119 @@
-import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
-from launch.actions import TimerAction
+from launch.event_handlers import OnProcessExit
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
 import os
-from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
-from launch.substitutions import PathJoinSubstitution, FindPackageShare
+from launch_ros.substitutions import FindPackageShare
+from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    arctos_description_dir = get_package_share_directory('arctos_description')
-    arctos_hardware_interface_dir = get_package_share_directory('arctos_hardware_interface')
+    # Declare arguments
 
-    # Launch the robot state publisher
-    urdf_file = os.path.join(arctos_description_dir, 'urdf', 'arctos.urdf')
-    robot_state_publisher_node = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='screen',
-        arguments=[urdf_file]
+    declared_arguments = []
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "gui",
+            default_value="true",
+            description="Start RViz2 automatically with this launch file.",
+        )
+    )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("arctos_description"), "rviz", "view_robot.rviz"]
     )
 
-    # Launch the joint state publisher (to publish joint states)
-    joint_state_publisher_node = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        output='screen',
-    )
-
-    # Define the robot controller configuration (arctos_controller.yaml)
-    robot_controllers = PathJoinSubstitution(
+    robot_description_content = Command(
         [
-            FindPackageShare("arctos_description"),
-            "config",
-            "arctos_controller.yaml",  # The file where your controllers are configured
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("arctos_description"),
+                    "urdf",
+                    "arctos.urdf.xacro",
+                ]
+            ),
         ]
     )
+    robot_description = {"robot_description": robot_description_content}
 
-    # Start the ros2_control node with the controller manager
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("arctos_hardware_interface"),
+            "config",
+            "arctos_controller.yaml",
+        ]
+    )
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', rviz_config_file],
+    )
+
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[robot_controllers],
-        remappings=[("/controller_manager/robot_description", "/robot_description")],
+        remappings=[
+            ("~/robot_description", "/robot_description"),
+        ],
         output="both",
     )
+    robot_state_pub_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="both",
+        parameters=[robot_description],
+    )
 
-    # Start the controller spawner for the joint_state_broadcaster
+    gui = LaunchConfiguration("gui")
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        condition=IfCondition(gui),
+    )
+
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
+        arguments=["arctos_controller", "-c", "/controller_manager"],
     )
 
-    return LaunchDescription([
+    # Delay rviz start after `joint_state_broadcaster`
+    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[rviz_node],
+        )
+    )
+
+    # Delay start of joint_state_broadcaster after `robot_controller`
+    # TODO(anyone): This is a workaround for flaky tests. Remove when fixed.
+    delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=robot_controller_spawner,
+            on_exit=[joint_state_broadcaster_spawner],
+        )
+    )
+
+    nodes = [
         control_node,
+        robot_state_pub_node,
         robot_controller_spawner,
-        robot_state_publisher_node,
-        joint_state_publisher_node,
-    ])
+        delay_rviz_after_joint_state_broadcaster_spawner,
+        delay_joint_state_broadcaster_after_robot_controller_spawner,
+    ]
+
+    return LaunchDescription(declared_arguments + nodes)
