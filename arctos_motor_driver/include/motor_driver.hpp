@@ -50,8 +50,6 @@ private:
     // Method to process the incoming CAN message
     void canMessageCallback(const can_msgs::msg::Frame::SharedPtr msg, uint32_t motor_id);
 
-    // Keep only one declaration of publishJointState
-    void publishJointState(uint32_t motor_id);
 };
 
 #endif // MOTOR_DRIVER_HPP

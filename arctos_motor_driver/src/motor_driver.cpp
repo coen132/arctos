@@ -3,6 +3,7 @@
 #include <map>
 #include <stdint.h>
 #include <algorithm>
+
 uint16_t calculate_crc(const std::vector<uint8_t>& data)
 {
     uint16_t crc = 0xFFFF;  // Initial CRC value
@@ -24,11 +25,11 @@ uint16_t calculate_crc(const std::vector<uint8_t>& data)
     return crc;
 }
 
+std::vector<double> joint_positions_;
+
 MotorDriver::MotorDriver()
     : Node("motor_driver")
 {
-    // Publisher for joint states
-    joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
     // Publisher for CAN messages
     can_pub_ = this->create_publisher<can_msgs::msg::Frame>("/to_motor_can_bus", 10);
@@ -57,22 +58,24 @@ MotorDriver::MotorDriver()
 
 void MotorDriver::canMessageCallback(const can_msgs::msg::Frame::SharedPtr msg, uint32_t motor_id)
 {
-    if (msg->id == motor_id && msg->dlc == 8)
+        if (msg->id == motor_id && msg->dlc == 8)
     {
+        // Combine the two bytes to form the raw angle value
         int32_t raw_angle = (msg->data[0] << 8) | msg->data[1];
+
+        // Convert the raw angle value to radians (angle in float64)
         double angle_radians = (static_cast<double>(raw_angle) / 0x4000) * 2 * M_PI;
 
-        // Update joint state
-        auto &joint_state = joint_states_[motor_id];
-        joint_state.header.stamp = this->now();
-        joint_state.name = {"joint_" + std::to_string(motor_id)};
-        joint_state.position = {angle_radians};
+        // Resize the joint_positions array if necessary
+        if (motor_id >= joint_positions_.size())
+        {
+            joint_positions_.resize(motor_id + 1, 0.0);  // Resize to accommodate new motor_id if needed
+        }
 
-        // Publish joint state
-        publishJointState(motor_id);
+        // Update the joint position for the specific motor
+        joint_positions_[motor_id] = angle_radians;
     }
 }
-
 void MotorDriver::requestJointAngle(uint32_t motor_id)
 {
     auto msg = std::make_shared<can_msgs::msg::Frame>();
@@ -81,11 +84,7 @@ void MotorDriver::requestJointAngle(uint32_t motor_id)
     msg->data = {0x30, 0x31}; // Example request data
     can_pub_->publish(*msg);
 }
-void MotorDriver::publishJointState(uint32_t motor_id)
-{
-    auto &joint_state = joint_states_[motor_id];
-    joint_state_pub_->publish(joint_state);
-}
+
 float MotorDriver::getMotorPosition(uint32_t motor_id)
 {
     // Send request for motor position

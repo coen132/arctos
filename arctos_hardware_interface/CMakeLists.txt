@@ -13,11 +13,13 @@ set(HW_IF_INCLUDE_DEPENDS
   pluginlib
   rcpputils
   hardware_interface
+  arctos_motor_driver
 )
 set(REF_GEN_INCLUDE_DEPENDS
   kdl_parser
   rclcpp
   trajectory_msgs
+  arctos_motor_driver
 )
 set(CONTROLLER_INCLUDE_DEPENDS
   pluginlib
@@ -25,6 +27,7 @@ set(CONTROLLER_INCLUDE_DEPENDS
   controller_interface
   realtime_tools
   trajectory_msgs
+  arctos_motor_driver
 )
 
 # find dependencies
@@ -40,6 +43,8 @@ foreach(Dependency IN ITEMS ${CONTROLLER_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
+include_directories(${AMENT_PREFIX_PATH}/include/arctos_motor_driver)
+
 ## COMPILE
 add_executable(send_trajectory reference_generator/send_trajectory.cpp)
 
@@ -54,17 +59,18 @@ add_library(
   hardware/arctos_hardware.cpp
   controller/arctos_controller.cpp
 )
-
 target_compile_features(arctos_hardware_interface PUBLIC cxx_std_17)
 target_include_directories(arctos_hardware_interface PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controller/include>
 $<INSTALL_INTERFACE:include/arctos_hardware_interface>
+$<INSTALL_INTERFACE:include/arctos_motor_driver/include>
 )
 ament_target_dependencies(
   arctos_hardware_interface PUBLIC
   ${HW_IF_INCLUDE_DEPENDS}
   ${CONTROLLER_INCLUDE_DEPENDS}
+  arctos_motor_driver
 )
 
 # Export hardware plugins
@@ -77,10 +83,7 @@ install(
   DIRECTORY hardware/include/
   DESTINATION include/arctos_hardware_interface
  )
-# install(
-#   DIRECTORY description/launch description/ros2_control description/urdf
-#   DESTINATION share/arctos_hardware_interface
-# )
+
 install(
   DIRECTORY bringup/launch bringup/config
   DESTINATION share/arctos_hardware_interface

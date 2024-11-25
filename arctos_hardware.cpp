@@ -6,7 +6,7 @@
 
 namespace arctos_hardware_interface
 {
-  //MotorDriver motor_driver_;
+
 CallbackReturn RobotSystem::on_init(const hardware_interface::HardwareInfo & info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
@@ -89,24 +89,43 @@ std::vector<hardware_interface::CommandInterface> RobotSystem::export_command_in
 
 return_type RobotSystem::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
-  // TODO(pac48) set sensor_states_ values from subscriber
-
-  for (auto i = 0ul; i < joint_velocities_command_.size(); i++)
   {
-    joint_velocities_[i] = joint_velocities_command_[i];
-    joint_position_[i] += joint_velocities_command_[i] * period.seconds();
-  }
+      // Loop through all motor IDs (assumed you have them in a list or array)
+      for (size_t i = 0; i < joint_position_.size(); ++i)
+      {
+          uint32_t motor_id = joint_position_[i];
 
-  for (auto i = 0ul; i < joint_position_command_.size(); i++)
-  {
-    joint_position_[i] = joint_position_command_[i];
-  }
+          // Get motor position using the motor driver's function
+          double motor_position = motor_driver_.getMotorPosition(motor_id);
 
+          // Store the motor position in the joint_positions array
+          joint_position_[i] = motor_position;  // Assuming motor_ids_ and joint_positions_ are aligned
+
+          // Optionally log for debugging
+          RCLCPP_INFO(rclcpp::get_logger("robot_system"), "Motor %d Position: %f", motor_id, motor_position);
+      }
+
+      return hardware_interface::return_type::OK;
+  }
   return return_type::OK;
 }
 
 return_type RobotSystem::write(const rclcpp::Time &, const rclcpp::Duration &)
 {
+  for (size_t i = 0; i < joint_position_command_.size(); ++i) {
+      if (joint_position_command_[i] != joint_position_[i]) {
+          RCLCPP_INFO(
+              rclcpp::get_logger("RobotSystem"),
+              "Received position command for joint %zu: %f",
+              i,
+              joint_position_command_[i]
+          );
+          // Simulate moving the joint towards the commanded position.
+          joint_position_[i] = joint_position_command_[i];
+      }
+  }
+  // Simulate additional state updates for the robot
+  RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Command successfully applied.");
   return return_type::OK;
 }
 
