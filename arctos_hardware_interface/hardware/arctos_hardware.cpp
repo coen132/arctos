@@ -6,7 +6,7 @@
 
 namespace arctos_hardware_interface
 {
-  //MotorDriver motor_driver_;
+
 CallbackReturn RobotSystem::on_init(const hardware_interface::HardwareInfo & info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
@@ -89,18 +89,16 @@ std::vector<hardware_interface::CommandInterface> RobotSystem::export_command_in
 
 return_type RobotSystem::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
-  // TODO(pac48) set sensor_states_ values from subscriber
-
-  for (auto i = 0ul; i < joint_velocities_command_.size(); i++)
+  for (size_t i = 0; i < joint_position_.size(); ++i)
   {
-    joint_velocities_[i] = joint_velocities_command_[i];
-    joint_position_[i] += joint_velocities_command_[i] * period.seconds();
-  }
+      uint32_t motor_id = joint_position_[i];  // Get motor ID
+      double motor_position = motor_driver_.getMotorPosition(motor_id);  // Get motor position
 
-  for (auto i = 0ul; i < joint_position_command_.size(); i++)
-  {
-    joint_position_[i] = joint_position_command_[i];
-  }
+      // Update the joint position
+      joint_position_[i] = motor_position;  // Store the position in the joint_positions_ array
+
+      //Optionally, log or debug the updated position
+  RCLCPP_INFO(rclcpp::get_logger("robot_system"), "Motor %d Position: %f", motor_id, motor_position);  }
 
   return return_type::OK;
 }

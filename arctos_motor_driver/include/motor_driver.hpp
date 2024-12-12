@@ -29,8 +29,6 @@ public:
     void setMotorSpeed(uint32_t motor_id, float speed, bool direction, uint8_t acceleration);
 
 private:
-    // Publisher for joint states
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 
     // Publisher for CAN messages
     rclcpp::Publisher<can_msgs::msg::Frame>::SharedPtr can_pub_;
@@ -50,6 +48,8 @@ private:
     // Method to process the incoming CAN message
     void canMessageCallback(const can_msgs::msg::Frame::SharedPtr msg, uint32_t motor_id);
 
+    // Keep only one declaration of publishJointState
+    void publishJointState(uint32_t motor_id);
 };
 
 #endif // MOTOR_DRIVER_HPP

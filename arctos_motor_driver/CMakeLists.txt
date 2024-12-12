@@ -11,8 +11,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(can_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+
 # Create a library for the motor driver
-add_executable(arctos_motor_driver
+add_library(arctos_motor_driver SHARED
   src/motor_driver.cpp
 )
 
@@ -29,9 +30,15 @@ ament_target_dependencies(arctos_motor_driver
   can_msgs
   sensor_msgs
 )
+
+# Install the library
 install(TARGETS
   arctos_motor_driver
-  DESTINATION lib/${PROJECT_NAME})
+  EXPORT export_arctos_motor_driver
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
 # Install header files
 install(DIRECTORY include/
@@ -43,8 +50,9 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/
 )
 
+# Export library
 ament_export_include_directories(include)
-#ament_export_targets(export_arctos_motor_driver HAS_LIBRARY_TARGET)
+ament_export_targets(export_arctos_motor_driver HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp can_msgs sensor_msgs)
 
 # Export package information

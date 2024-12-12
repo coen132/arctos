@@ -27,10 +27,11 @@ uint16_t calculate_crc(const std::vector<uint8_t>& data)
 
 std::vector<double> joint_positions_;
 
-MotorDriver::MotorDriver()
+MotorDriver::MotorDriver(
+)
     : Node("motor_driver")
 {
-
+    RCLCPP_INFO(this->get_logger(), "MotorDriver constructor called");
     // Publisher for CAN messages
     can_pub_ = this->create_publisher<can_msgs::msg::Frame>("/to_motor_can_bus", 10);
 
