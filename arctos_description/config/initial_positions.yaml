@@ -1,9 +1,9 @@
 # Default initial positions for arctos's ros2_control fake system
 
 initial_positions:
-  joint1: 0
-  joint2: 0
-  joint3: 0
-  joint4: 0
-  joint5: 0
-  joint6: 0
+  X_joint: 0
+  Y_joint: 0
+  Z_joint: 0
+  A_joint: 0
+  B_joint: 0
+  C_joint: 0

@@ -1,85 +1,78 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 project(arctos_hardware_interface)
 
+# Compiler options
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# Find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(can_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(hardware_interface REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
 find_package(realtime_tools REQUIRED)
-find_package(rcpputils REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(arctos_motor_driver REQUIRED)  # Ensure this line is present
 
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+# Add library for hardware interface
+add_library(arctos_interface SHARED
+  src/arctos_interface.cpp
+)
 
-install(DIRECTORY
-  launch
-  include
+# Link the hardware interface libraries and the motor driver
+target_link_libraries(arctos_interface
+  ${rclcpp_LIBRARIES}
+  ${hardware_interface_LIBRARIES} 
+)
+
+# Include directories
+target_include_directories(arctos_interface
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+# Specify dependencies
+ament_target_dependencies(arctos_interface
+  rclcpp
+  can_msgs
+  sensor_msgs
+  arctos_motor_driver  
+  hardware_interface
+  trajectory_msgs
+  realtime_tools
+)
+
+# Install targets
+install(TARGETS arctos_interface
+  EXPORT export_arctos_interface
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# Install header files
+install(DIRECTORY include/
+  DESTINATION include
+)
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY ros2_control
+  DESTINATION share/${PROJECT_NAME}/ros2_control
+)
+
+# Install launch files
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+install(FILES arctos_hardware_interface.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
-add_library(
-  ${PROJECT_NAME}
-  SHARED
-  src/arctos_interface.cpp
-  controller/arctos_controller.cpp
-)
-
-target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE
-  include)
-
-ament_target_dependencies(
-  ${PROJECT_NAME} 
-  can_msgs
-  sensor_msgs
-  hardware_interface
-  pluginlib
-  rclcpp_lifecycle
-  realtime_tools
-  rcpputils
-  trajectory_msgs)
-
-target_compile_definitions(${PROJECT_NAME}  PRIVATE "JOINT_STATE_BROADCASTER_BUILDING_DLL")
-target_compile_definitions(${PROJECT_NAME}  PUBLIC "PLUGINLIB__DISABLE_BOOST_FUCNTIONS")
-pluginlib_export_plugin_description_file(hardware_interface arctos_hardware_interface.xml)
-
-install(
-  TARGETS ${PROJECT_NAME} 
-  DESTINATION lib
-)
-install(
-  DIRECTORY include/ 
-  DESTINATION include
-)
-
-install(
-  DIRECTORY ros2_control/
-  DESTINATION share/arctos_hardware_interface/ros2_control
-)
-
-pluginlib_export_plugin_description_file(hardware_interface arctos_hardware_interface.xml)
-# Export controller plugins
-pluginlib_export_plugin_description_file(controller_interface arctos_hardware_interface.xml)
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
+# Export package
+ament_export_targets(export_arctos_interface HAS_LIBRARY_TARGET)
+ament_export_dependencies(rclcpp can_msgs sensor_msgs hardware_interface)
 
 ament_package()

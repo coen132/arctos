@@ -117,10 +117,8 @@ def generate_launch_description():
             )
         )
 
-    # Full launch description
     return LaunchDescription([
-        # Launch arguments
+
         *launch_arguments,
-        # Nodes, executables and event handlers
         *launch_executables
     ])    

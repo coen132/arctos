@@ -11,9 +11,9 @@ moveit_simple_controller_manager:
     action_ns: ArctosController
     default: true
     joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      - joint_5
-      - joint_6
+      - X_joint
+      - Y_joint
+      - Z_joint
+      - A_joint
+      - B_joint
+      - C_joint

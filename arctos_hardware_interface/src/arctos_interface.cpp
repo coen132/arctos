@@ -1,18 +1,4 @@
-// Copyright 2023 ros2_control Development Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#include "arctos_interface.hpp"
+#include "arctos_hardware_interface/arctos_interface.hpp"
 #include <string>
 #include <vector>
 
@@ -102,16 +88,17 @@ return_type ArctosInterface::read(const rclcpp::Time & /*time*/, const rclcpp::D
 {
   // TODO(pac48) set sensor_states_ values from subscriber
 
-  for (auto i = 0ul; i < joint_velocities_command_.size(); i++)
-  {
-    joint_velocities_[i] = joint_velocities_command_[i];
-    joint_position_[i] += joint_velocities_command_[i] * period.seconds();
-  }
+  // for (auto i = 0ul; i < joint_velocities_command_.size(); i++)
+  // {
+  //   joint_velocities_[i] = joint_velocities_command_[i];
+  //   joint_position_[i] += joint_velocities_command_[i] * period.seconds();
+  // }
 
-  for (auto i = 0ul; i < joint_position_command_.size(); i++)
-  {
-    joint_position_[i] = joint_position_command_[i];
-  }
+  // for (auto i = 0ul; i < joint_position_command_.size(); i++)
+  // {
+  //   // joint_position_[i] = joint_position_command_[i];
+  //   joint_position[i] = MotorDriver::publishJointState()
+  // }
 
   return return_type::OK;
 }
